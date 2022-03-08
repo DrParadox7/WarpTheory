@@ -18,11 +18,15 @@ import shukaro.warptheory.handlers.IWarpEvent;
 import shukaro.warptheory.handlers.WarpHandler;
 import shukaro.warptheory.util.Constants;
 import shukaro.warptheory.util.FormatCodes;
+import thaumcraft.common.Thaumcraft;
+import thaumcraft.common.lib.research.PlayerKnowledge;
+
 
 import java.util.List;
 import java.util.Locale;
 
 public class ItemAmulet extends Item implements IBauble {
+    public static final PlayerKnowledge Knowledge = Thaumcraft.proxy.getPlayerKnowledge();
     private IIcon icon;
 
     public ItemAmulet() {
@@ -72,10 +76,13 @@ public class ItemAmulet extends Item implements IBauble {
     public void onWornTick(ItemStack itemstack, EntityLivingBase entity) {
         if (entity instanceof EntityPlayer) {
             EntityPlayer player = (EntityPlayer) entity;
-            if (player.ticksExisted % 500 != 0 || WarpHandler.getTotalWarp(player) <= 0 || player.worldObj.isRemote)
+            String name = player.getDisplayName();
+            int wn = Knowledge.getWarpSticky(name);
+            
+            if (player.ticksExisted % 500 != 0 || wn <= 0 || player.worldObj.isRemote)
                 return;
-            if (player.worldObj.rand.nextInt(100) <= Math.sqrt(WarpHandler.getTotalWarp(player))) {
-                IWarpEvent event = WarpHandler.queueOneEvent(player, WarpHandler.getTotalWarp(player));
+            if (player.worldObj.rand.nextInt(100) <= Math.sqrt(wn)) {
+                IWarpEvent event = WarpHandler.queueOneEvent(player, wn);
                 WarpHandler.removeWarp(player, (event != null) ? event.getCost() : 1);
             }
         }

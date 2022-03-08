@@ -17,11 +17,15 @@ import shukaro.warptheory.handlers.WarpHandler;
 import shukaro.warptheory.util.ChatHelper;
 import shukaro.warptheory.util.Constants;
 import shukaro.warptheory.util.FormatCodes;
+import thaumcraft.common.Thaumcraft;
+import thaumcraft.common.lib.research.PlayerKnowledge;
+
 
 import java.util.List;
 import java.util.Locale;
 
 public class ItemCleanser extends Item {
+    public static final PlayerKnowledge Knowledge = Thaumcraft.proxy.getPlayerKnowledge();
     private IIcon icon1;
     private IIcon icon2;
 
@@ -88,7 +92,10 @@ public class ItemCleanser extends Item {
     }
 
     protected void purgeWarp(EntityPlayer player) {
-        if (WarpHandler.getTotalWarp(player) > 0)
+        String name = player.getDisplayName();
+        int wp = Knowledge.getWarpPerm(name);
+
+        if (wp > 0)
             ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purge"));
         else
             ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purgefail"));

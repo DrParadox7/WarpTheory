@@ -83,51 +83,67 @@ public class WarpHandler {
         addDecayMapping(Blocks.end_stone, Blocks.cobblestone);
         addDecayMapping(Blocks.obsidian, Blocks.cobblestone);
     }
-
+    
+    //Convert up to 200 permanent Warp into Normal Warp.
+    //Every point of Normal & Temporary (Dissonance) lessen its potency.
+    //If the Dissonance is greater than the benefit on user (chastity) then it will backlash causing warp events relative to the amount of backlash and giving 5 permanent and normal warp.   
     public static void purgeWarp(EntityPlayer player) {
-        int count = queueMultipleEvents(player, getTotalWarp(player));
-        addUnavoidableCount(player, count);
-        removeWarp(player, getTotalWarp(player));
+        String name = player.getDisplayName();
+        
+
+        int wp = Knowledge.getWarpPerm(name);
+        int wn = Knowledge.getWarpSticky(name);
+        int wt = Knowledge.getWarpTemp(name);
+
+     
+        int dissonance = (wn + wt)*2;
+        int chastity = 200 - dissonance;
+        int backlash = (dissonance - 200);
+
+        int count = queueMultipleEvents(player, backlash);
+
+        if (dissonance < 200){
+            Knowledge.addWarpPerm(name, -chastity);
+            Knowledge.addWarpSticky(name, chastity);
+        } else {
+            ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purgefailed"));
+            addUnavoidableCount(player, count);
+            Knowledge.addWarpPerm(name, 5);
+            Knowledge.addWarpSticky(name, 5);
+        }
+            
     }
 
-    //add function to remove 5 warp, only at 50+
+    //Converts 1 Permanent Warp into 1 Normal Warp for every 25 permanent warp over 50 but generating an equivalent amount of temporary warp.
     public static void purgeWarpMinor(EntityPlayer player) {
-        int[] warp = getIndividualWarps(player);
-        if (warp[0] + warp[1] + warp[2] >= 50) {
-            removeWarp(player, 5);
+        String name = player.getDisplayName();
+        int wp = Knowledge.getWarpPerm(name);
+        int depravity = (wp-50)/25;
+
+        if (wp >= 50) {
+            Knowledge.addWarpPerm(name, -depravity);
+            Knowledge.addWarpSticky(name, depravity);
+            Knowledge.addWarpTemp(name, depravity);
             ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purgeminor"));
         } else
             ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purgefailed"));
     }
-
     public static void removeWarp(EntityPlayer player, int amount) {
         if (amount <= 0)
             return;
         String name = player.getDisplayName();
-        int wp = Knowledge.getWarpPerm(name);
         int wn = Knowledge.getWarpSticky(name);
-        int wt = Knowledge.getWarpTemp(name);
         // reset the warp counter so
         // 1) if partial warp reduction, reset the counter so vanilla TC warp events would fire
         //    the same behavior can be observed on TC sanitizing soap
         // 2) if total warp reduction, the counter would be reduced to 0, so vanilla TC warp events would
         //    no longer fire
-        Knowledge.setWarpCounter(name, wp + wn + wt - amount);
-
-        Knowledge.addWarpTemp(name, -amount);
-        amount -= wt;
-        if (amount <= 0)
-            return;
+        Knowledge.setWarpCounter(name, wn - amount);
 
         Knowledge.addWarpSticky(name, -amount);
         amount -= wn;
         if (amount <= 0)
             return;
-
-        if (ConfigHandler.allowPermWarpRemoval) {
-            amount = (int) Math.ceil(amount / ConfigHandler.permWarpMult);
-            Knowledge.addWarpPerm(name, -amount);
-        }
     }
 
     public static int getTotalWarp(EntityPlayer player) {

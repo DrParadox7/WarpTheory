@@ -10,10 +10,13 @@ import net.minecraft.util.StatCollector;
 import shukaro.warptheory.handlers.WarpHandler;
 import shukaro.warptheory.util.ChatHelper;
 import shukaro.warptheory.util.Constants;
+import thaumcraft.common.Thaumcraft;
+import thaumcraft.common.lib.research.PlayerKnowledge;
 
 import java.util.Locale;
 
 public class ItemCleanserMinor extends ItemCleanser {
+    public static final PlayerKnowledge Knowledge = Thaumcraft.proxy.getPlayerKnowledge();
     private IIcon icon;
 
     public ItemCleanserMinor() {
@@ -23,6 +26,9 @@ public class ItemCleanserMinor extends ItemCleanser {
 
     @Override
     protected void purgeWarp(EntityPlayer player) {
+        String name = player.getDisplayName();
+        int wp = Knowledge.getWarpPerm(name);
+        
         if (WarpHandler.getTotalWarp(player) == 0) {
             ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purgefail"));
         }
