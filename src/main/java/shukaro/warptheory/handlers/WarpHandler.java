@@ -120,7 +120,7 @@ public class WarpHandler {
         int wp = Knowledge.getWarpPerm(name);
         int depravity = (wp-50)/25;
 
-        if (wp >= 50) {
+        if (depravity > 0) {
             Knowledge.addWarpPerm(name, -depravity);
             Knowledge.addWarpSticky(name, depravity);
             Knowledge.addWarpTemp(name, depravity);
