@@ -28,8 +28,9 @@ public class ItemCleanserMinor extends ItemCleanser {
     protected void purgeWarp(EntityPlayer player) {
         String name = player.getDisplayName();
         int wp = Knowledge.getWarpPerm(name);
+        int depravity = (wp-50)/25;
         
-        if (WarpHandler.getTotalWarp(player) == 0) {
+        if (depravity == 0) {
             ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purgefail"));
         }
 
