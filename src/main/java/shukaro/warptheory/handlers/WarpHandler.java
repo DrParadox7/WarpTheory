@@ -13,6 +13,8 @@ import shukaro.warptheory.util.MiscHelper;
 import shukaro.warptheory.util.NameMetaPair;
 import thaumcraft.api.IWarpingGear;
 import thaumcraft.common.Thaumcraft;
+import thaumcraft.common.config.Config;
+import thaumcraft.common.config.ConfigBlocks;
 import thaumcraft.common.lib.research.PlayerKnowledge;
 
 import java.util.ArrayList;
@@ -84,41 +86,46 @@ public class WarpHandler {
         addDecayMapping(Blocks.obsidian, Blocks.cobblestone);
     }
     
-    //Convert up to 200 permanent Warp into Normal Warp.
-    //Every point of Normal & Temporary (Dissonance) lessen its potency.
-    //If the Dissonance is greater than the benefit on user (chastity) then it will backlash causing warp events relative to the amount of backlash and giving 5 permanent and normal warp.   
+    //Pure Tear.
     public static void purgeWarp(EntityPlayer player) {
         String name = player.getDisplayName();
         
-
         int wp = Knowledge.getWarpPerm(name);
         int wn = Knowledge.getWarpSticky(name);
         int wt = Knowledge.getWarpTemp(name);
+        
+        int totalWarp = Knowledge.getWarpTotal(name);
+        int dissonance = (int)(8100/Math.pow(totalWarp,2))*100;
+        int backlash = (int)(totalWarp*4)/100;
 
-     
-        int dissonance = (wn + wt)*2;
-        int chastity = 200 - dissonance;
-        int backlash = (dissonance - 200);
-
-        int count = queueMultipleEvents(player, backlash);
-
-        if (dissonance < 200){
-            Knowledge.addWarpPerm(name, -chastity);
-            Knowledge.addWarpSticky(name, chastity);
-        } else {
-            ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purgefailed"));
-            addUnavoidableCount(player, count);
-            Knowledge.addWarpPerm(name, 5);
-            Knowledge.addWarpSticky(name, 5);
+    //Purge all non-permanent warp
+        if (wn+wt > 0){
+        Knowledge.addWarpSticky(name, -wn);
+        Knowledge.addWarpTemp(name, -wt);
         }
-            
+        //Add backlash if player attempts this with significant warp (100+)
+        if (totalWarp > 100){
+            //Reduced by half if under the Warp Ward effect    
+                if (player.isPotionActive(Config.potionWarpWardID)) {
+                    backlash /= 2;
+                    }
+            ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.backlash"));
+            addUnavoidableCount(player, backlash);
+
+            // Purge permanent warp inversely exponential to total warp (less is better)
+            Knowledge.addWarpPerm(name, -dissonance);  
+        }else {
+        //Purges all permanent warp IF under 100 total warp.
+        Knowledge.addWarpPerm(name, -wp);
+        }
     }
 
-    //Converts 1 Permanent Warp into 1 Normal Warp for every 25 permanent warp over 50 but generating an equivalent amount of temporary warp.
+    //Impure Tear
+    //Converts 1 Permanent Warp into 1 Normal Warp for every 15 permanent warp over 50 but generating an equivalent amount of temporary warp.
     public static void purgeWarpMinor(EntityPlayer player) {
         String name = player.getDisplayName();
         int wp = Knowledge.getWarpPerm(name);
-        int depravity = (wp-50)/25;
+        int depravity = (wp-50)/15;
 
         if (depravity > 0) {
             Knowledge.addWarpPerm(name, -depravity);

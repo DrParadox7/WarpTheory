@@ -19,12 +19,13 @@ import shukaro.warptheory.util.Constants;
 import shukaro.warptheory.util.FormatCodes;
 import thaumcraft.common.Thaumcraft;
 import thaumcraft.common.lib.research.PlayerKnowledge;
+import witchinggadgets.api.IPrimordialCrafting;
 
 
 import java.util.List;
 import java.util.Locale;
 
-public class ItemCleanser extends Item {
+public class ItemCleanser extends Item implements IPrimordialCrafting {
     public static final PlayerKnowledge Knowledge = Thaumcraft.proxy.getPlayerKnowledge();
     private IIcon icon1;
     private IIcon icon2;
@@ -95,12 +96,12 @@ public class ItemCleanser extends Item {
         String name = player.getDisplayName();
         int wp = Knowledge.getWarpPerm(name);
 
-        if (wp > 0)
+        if (wp > 0) {
+            WarpHandler.purgeWarp(player);
             ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purge"));
-        else
+        }else {
             ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purgefail"));
-
-        WarpHandler.purgeWarp(player);
+        }
     }
 
     @Override
@@ -135,4 +136,10 @@ public class ItemCleanser extends Item {
     public void addInformation(ItemStack stack, EntityPlayer player, List infoList, boolean advanced) {
         infoList.add(FormatCodes.DarkGrey.code + FormatCodes.Italic.code + StatCollector.translateToLocal(getToolTip()));
     }
+
+    @Override
+	public int getReturnedPearls(ItemStack stack)
+	{
+		return 3;
+	}
 }
