@@ -94,9 +94,9 @@ public class ItemCleanser extends Item implements IPrimordialCrafting {
 
     protected void purgeWarp(EntityPlayer player) {
         String name = player.getDisplayName();
-        int wp = Knowledge.getWarpPerm(name);
+        int warp = WarpHandler.getTotalWarp(player);
 
-        if (wp > 0) {
+        if (warp > 0) {
             WarpHandler.purgeWarp(player);
             ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purge"));
         }else {

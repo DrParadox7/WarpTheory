@@ -30,11 +30,11 @@ public class ItemCleanserMinor extends ItemCleanser {
         int wp = Knowledge.getWarpPerm(name);
         int depravity = (wp-50)/25;
         
-        if (depravity == 0) {
+        if (depravity > 0) {
+            WarpHandler.purgeWarpMinor(player);
+        }else {
             ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purgefail"));
         }
-
-        WarpHandler.purgeWarpMinor(player);
     }
 
     @Override

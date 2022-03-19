@@ -81,7 +81,7 @@ public class ItemAmulet extends Item implements IBauble {
             
             if (player.ticksExisted % 500 != 0 || wn <= 0 || player.worldObj.isRemote)
                 return;
-            if (player.worldObj.rand.nextInt(100) <= Math.sqrt(wn)) {
+            if (player.worldObj.rand.nextInt(100) <= Math.sqrt(wn*3)) {
                 IWarpEvent event = WarpHandler.queueOneEvent(player, wn);
                 WarpHandler.removeWarp(player, (event != null) ? event.getCost() : 1);
             }

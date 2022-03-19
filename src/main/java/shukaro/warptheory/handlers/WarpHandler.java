@@ -8,6 +8,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
+import net.minecraft.util.ChatComponentText;
 import shukaro.warptheory.util.ChatHelper;
 import shukaro.warptheory.util.MiscHelper;
 import shukaro.warptheory.util.NameMetaPair;
@@ -94,29 +95,39 @@ public class WarpHandler {
         int wn = Knowledge.getWarpSticky(name);
         int wt = Knowledge.getWarpTemp(name);
         
-        int totalWarp = Knowledge.getWarpTotal(name);
-        int dissonance = (int)(8100/Math.pow(totalWarp,2))*100;
-        int backlash = (int)(totalWarp*4)/100;
+        int totalWarp = getTotalWarp(player);
+        //Backlash if player attempts this with significant warp (90+)
+        if (totalWarp > 90){
+            int dissonance = (int)((8100/Math.pow(totalWarp,2))*100); 
+            int backlash = (int)((Math.pow(totalWarp,2))/1000);
+            int count = queueMultipleEvents(player, backlash);
+        
+        //Backlash capped at 900 Total Ward
+        //Prevents hours of warp events at no benefits
+            if (backlash > 810) {
+                backlash = 810;
+                }
+        //Reduced by half if under the Warp Ward effect    
+            if (player.isPotionActive(Config.potionWarpWardID)) {
+                backlash /= 2;
+                }
+        //Queue in events ignoring WarpWard's immunity
+        ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.backlash"));
+        addUnavoidableCount(player, count);
 
-    //Purge all non-permanent warp
+        // Purge permanent warp inversely exponential to total warp (less is better)
+        removePermWarp(player, dissonance);
+        }else {
+            //Purges all permanent warp IF under 100 total warp.
+            if (wp > 0){
+            removePermWarp(player, wp);
+            }
+        }
+        //Purge all non-permanent warp
         if (wn+wt > 0){
+        Knowledge.setWarpCounter(name, wp);
         Knowledge.addWarpSticky(name, -wn);
         Knowledge.addWarpTemp(name, -wt);
-        }
-        //Add backlash if player attempts this with significant warp (100+)
-        if (totalWarp > 100){
-            //Reduced by half if under the Warp Ward effect    
-                if (player.isPotionActive(Config.potionWarpWardID)) {
-                    backlash /= 2;
-                    }
-            ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.backlash"));
-            addUnavoidableCount(player, backlash);
-
-            // Purge permanent warp inversely exponential to total warp (less is better)
-            Knowledge.addWarpPerm(name, -dissonance);  
-        }else {
-        //Purges all permanent warp IF under 100 total warp.
-        Knowledge.addWarpPerm(name, -wp);
         }
     }
 
@@ -125,9 +136,13 @@ public class WarpHandler {
     public static void purgeWarpMinor(EntityPlayer player) {
         String name = player.getDisplayName();
         int wp = Knowledge.getWarpPerm(name);
+        int wn = Knowledge.getWarpSticky(name);
+        int wt = Knowledge.getWarpTemp(name);
         int depravity = (wp-50)/15;
 
         if (depravity > 0) {
+            Knowledge.setWarpCounter(name, wp + wn + wt + depravity);
+
             Knowledge.addWarpPerm(name, -depravity);
             Knowledge.addWarpSticky(name, depravity);
             Knowledge.addWarpTemp(name, depravity);
@@ -139,18 +154,34 @@ public class WarpHandler {
         if (amount <= 0)
             return;
         String name = player.getDisplayName();
+        int wp = Knowledge.getWarpPerm(name);
         int wn = Knowledge.getWarpSticky(name);
+        int wt = Knowledge.getWarpTemp(name);
         // reset the warp counter so
         // 1) if partial warp reduction, reset the counter so vanilla TC warp events would fire
         //    the same behavior can be observed on TC sanitizing soap
         // 2) if total warp reduction, the counter would be reduced to 0, so vanilla TC warp events would
         //    no longer fire
-        Knowledge.setWarpCounter(name, wn - amount);
+        Knowledge.setWarpCounter(name, wp + wn + wt - amount);
 
         Knowledge.addWarpSticky(name, -amount);
-        amount -= wn;
+    }
+
+    public static void removePermWarp(EntityPlayer player, int amount) {
         if (amount <= 0)
             return;
+        String name = player.getDisplayName();
+        int wp = Knowledge.getWarpPerm(name);
+        int wn = Knowledge.getWarpSticky(name);
+        int wt = Knowledge.getWarpTemp(name);
+        // reset the warp counter so
+        // 1) if partial warp reduction, reset the counter so vanilla TC warp events would fire
+        //    the same behavior can be observed on TC sanitizing soap
+        // 2) if total warp reduction, the counter would be reduced to 0, so vanilla TC warp events would
+        //    no longer fire
+        Knowledge.setWarpCounter(name, wp + wn + wt - amount);
+
+        Knowledge.addWarpPerm(name, -amount);
     }
 
     public static int getTotalWarp(EntityPlayer player) {
