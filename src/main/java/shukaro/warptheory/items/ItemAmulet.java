@@ -20,6 +20,8 @@ import shukaro.warptheory.util.Constants;
 import shukaro.warptheory.util.FormatCodes;
 import thaumcraft.common.Thaumcraft;
 import thaumcraft.common.lib.research.PlayerKnowledge;
+import thaumcraft.common.config.Config;
+
 
 
 import java.util.List;
@@ -82,8 +84,13 @@ public class ItemAmulet extends Item implements IBauble {
             if (player.ticksExisted % 500 != 0 || wn <= 0 || player.worldObj.isRemote)
                 return;
             if (player.worldObj.rand.nextInt(100) <= Math.sqrt(wn*3)) {
+                //Allow amulet to function without events when Warp Ward is present
+                if (player.isPotionActive(Config.potionWarpWardID)) {
+                WarpHandler.removeWarp(player, 5);
+                }else {
                 IWarpEvent event = WarpHandler.queueOneEvent(player, wn);
                 WarpHandler.removeWarp(player, (event != null) ? event.getCost() : 1);
+                }
             }
         }
     }

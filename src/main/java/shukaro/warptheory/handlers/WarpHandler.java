@@ -96,16 +96,16 @@ public class WarpHandler {
         int wt = Knowledge.getWarpTemp(name);
         
         int totalWarp = getTotalWarp(player);
-        //Backlash if player attempts this with significant warp (90+)
-        if (totalWarp > 90){
-            int dissonance = (int)((8100/Math.pow(totalWarp,2))*100); 
-            int backlash = (int)((Math.pow(totalWarp,2))/1000);
+        //Backlash if player attempts this with significant warp (70+)
+        if (totalWarp > 70){
+            int dissonance = (int)(Math.pow((75/totalWarp),4)*50); 
+            int backlash = (int)((Math.pow(totalWarp,2))/500);
             int count = queueMultipleEvents(player, backlash);
         
-        //Backlash capped at 900 Total Ward
+        //Backlash capped at 250 Total Ward
         //Prevents hours of warp events at no benefits
-            if (backlash > 810) {
-                backlash = 810;
+            if (backlash > 120) {
+                backlash = 120;
                 }
         //Reduced by half if under the Warp Ward effect    
             if (player.isPotionActive(Config.potionWarpWardID)) {
@@ -118,7 +118,7 @@ public class WarpHandler {
         // Purge permanent warp inversely exponential to total warp (less is better)
         removePermWarp(player, dissonance);
         }else {
-            //Purges all permanent warp IF under 100 total warp.
+            //Purges all permanent warp IF at or under 70 total warp.
             if (wp > 0){
             removePermWarp(player, wp);
             }
