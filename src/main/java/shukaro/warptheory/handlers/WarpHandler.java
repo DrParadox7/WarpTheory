@@ -132,23 +132,26 @@ public class WarpHandler {
     }
 
     //Impure Tear
-    //Converts 1 Permanent Warp into 1 Normal Warp for every 15 permanent warp over 50 but generating an equivalent amount of temporary warp.
+    //Converts Permanent Warp into Normal Warp exponentially to total permanent warp.
     public static void purgeWarpMinor(EntityPlayer player) {
         String name = player.getDisplayName();
         int wp = Knowledge.getWarpPerm(name);
-        int wn = Knowledge.getWarpSticky(name);
-        int wt = Knowledge.getWarpTemp(name);
-        int depravity = (wp-50)/15;
 
-        if (depravity > 0) {
+        if (wp < 100) {
+            ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purgefailed"));
+            
+        } else {
+            int depravity = (int)Math.pow((wp/100),3);
+            int wn = Knowledge.getWarpSticky(name);
+            int wt = Knowledge.getWarpTemp(name);
+
             Knowledge.setWarpCounter(name, wp + wn + wt + depravity);
 
             Knowledge.addWarpPerm(name, -depravity);
             Knowledge.addWarpSticky(name, depravity);
             Knowledge.addWarpTemp(name, depravity);
             ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purgeminor"));
-        } else
-            ChatHelper.sendToPlayer(player, StatCollector.translateToLocal("chat.warptheory.purgefailed"));
+        }
     }
     public static void removeWarp(EntityPlayer player, int amount) {
         if (amount <= 0)
