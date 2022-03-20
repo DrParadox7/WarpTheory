@@ -98,7 +98,7 @@ public class WarpHandler {
         int totalWarp = getTotalWarp(player);
         //Backlash if player attempts this with significant warp (70+)
         if (totalWarp > 70){
-            int dissonance = (int)(Math.pow((75/totalWarp),4)*50); 
+            int dissonance = (int)((Math.pow((75/totalWarp),4)*50)); 
             int backlash = (int)((Math.pow(totalWarp,2))/500);
             int count = queueMultipleEvents(player, backlash);
         
