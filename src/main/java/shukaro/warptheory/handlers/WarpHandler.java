@@ -98,14 +98,14 @@ public class WarpHandler {
         int totalWarp = getTotalWarp(player);
         //Backlash if player attempts this with significant warp (70+)
         if (totalWarp > 70){
-            int dissonance = (int)((Math.pow((75/totalWarp),4)*50)); 
-            int backlash = (int)((Math.pow(totalWarp,2))/500);
+            int dissonance = (int)((Math.pow((75.0/totalWarp),4.0)*50)); 
+            int backlash = (int)(75+(Math.pow(totalWarp,2))/130);
             int count = queueMultipleEvents(player, backlash);
         
-        //Backlash capped at 250 Total Ward
+        //Backlash capped at 200 Total Ward
         //Prevents hours of warp events at no benefits
-            if (backlash > 120) {
-                backlash = 120;
+            if (backlash > 382) {
+                backlash = 382;
                 }
         //Reduced by half if under the Warp Ward effect    
             if (player.isPotionActive(Config.potionWarpWardID)) {

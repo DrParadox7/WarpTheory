@@ -4,7 +4,8 @@ itemGroup.warptheory.tab=Warp Theory
 
 # << chat item effects >>
 chat.warptheory.purgeminor=You feel a little better
-chat.warptheory.purge=You've got a bad feeling about this...
+chat.warptheory.purge=Your heart begins to quivers
+chat.warptheory.backlash=You've got a bad feeling about this...
 chat.warptheory.purgefail=Nothing in particular happens
 chat.warptheory.purgefailed=It doesn't seem to have worked
 chat.warptheory.addwarp=It feels as if something strange has slithered into you...
